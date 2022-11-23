@@ -1,0 +1,19 @@
+fluent-bit:
+  image:
+    tag: "2.0.6"
+  serviceMonitor:
+    enabled: true
+  dashboards:
+    enabled: true
+  metricsPort: 2020
+  config:
+    outputs: |
+      [OUTPUT]
+          Name stdout
+          Match kube.*
+          Retry_Limit False
+
+      [OUTPUT]
+          Name stdout
+          Match host.*
+          Retry_Limit False
