@@ -1,2 +1,3 @@
 .idea
 fluent-bit-helm-chart/charts
+fluent-bit-helm-chart/templates/es-secret.yaml

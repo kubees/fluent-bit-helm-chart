@@ -6,14 +6,26 @@ fluent-bit:
   dashboards:
     enabled: true
   metricsPort: 2020
+  envFrom:
+    - secretRef:
+        name: elastic-auth
   config:
     outputs: |
       [OUTPUT]
-          Name stdout
+          Name es
           Match kube.*
+          Host elastic.databases
+          HTTP_User       ${FLUENT_ELASTICSEARCH_USER}
+          HTTP_Passwd     ${FLUENT_ELASTICSEARCH_PASSWD}
+          Logstash_Format On
           Retry_Limit False
 
       [OUTPUT]
-          Name stdout
+          Name es
           Match host.*
+          Host elastic.databases
+          HTTP_User       ${FLUENT_ELASTICSEARCH_USER}
+          HTTP_Passwd     ${FLUENT_ELASTICSEARCH_PASSWD}
+          Logstash_Format On
+          Logstash_Prefix node
           Retry_Limit False
