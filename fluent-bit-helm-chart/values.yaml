@@ -10,6 +10,52 @@ fluent-bit:
     - secretRef:
         name: elastic-auth
   config:
+    filters: |
+      [FILTER]
+          Name modify
+          Match *
+          Rename message content
+          Rename log content
+      [FILTER]
+          Name kubernetes
+          Match kube.*
+          Merge_Log On
+          Merge_Log_Trim On
+          Labels Off
+          Annotations Off
+          K8S-Logging.Parser Off
+          K8S-Logging.Exclude Off
+      
+      [FILTER]
+          Name nest
+          Match kube.*
+          Operation lift
+          Nested_under kubernetes
+          Add_prefix   kubernetes_
+      [FILTER]
+          Name grep
+          Match kube.*
+          Exclude kubernetes_container_name fluent-bit
+      [FILTER]
+          Name modify
+          Match kube.*
+          Rename log content
+          Rename kubernetes_pod_name k8s.pod.name
+          Rename kubernetes_namespace_name k8s.namespace.name
+          Rename kubernetes_container_image k8s.container.image
+          Rename kubernetes_docker_id k8s.docker.id
+          Rename kubernetes_container_name k8s.container.name
+          Rename kubernetes_pod_id k8s.pod.id
+          Rename kubernetes_host k8s.host
+          Rename kubernetes_container_hash k8s.container.hash
+          Remove time
+      [FILTER]
+          Name     throttle
+          Match    kube.*
+          Rate     5000
+          Window   5
+          Print_Status true
+          Interval 30s
     outputs: |
       [OUTPUT]
           Name es
@@ -17,8 +63,8 @@ fluent-bit:
           Host elastic.databases
           HTTP_User       ${FLUENT_ELASTICSEARCH_USER}
           HTTP_Passwd     ${FLUENT_ELASTICSEARCH_PASSWD}
-          Logstash_Format On
           Retry_Limit False
+          index kube_logs
 
       [OUTPUT]
           Name es
@@ -26,6 +72,5 @@ fluent-bit:
           Host elastic.databases
           HTTP_User       ${FLUENT_ELASTICSEARCH_USER}
           HTTP_Passwd     ${FLUENT_ELASTICSEARCH_PASSWD}
-          Logstash_Format On
-          Logstash_Prefix node
           Retry_Limit False
+          index host_logs
