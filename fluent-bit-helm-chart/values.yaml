@@ -10,6 +10,52 @@ fluent-bit:
     - secretRef:
         name: elastic-auth
   config:
+    filters: |
+      [FILTER]
+          Name modify
+          Match *
+          Rename message content
+          Rename log content
+      [FILTER]
+          Name kubernetes
+          Match kube.*
+          Merge_Log On
+          Merge_Log_Trim On
+          Labels Off
+          Annotations Off
+          K8S-Logging.Parser Off
+          K8S-Logging.Exclude Off
+      
+      [FILTER]
+          Name nest
+          Match kube.*
+          Operation lift
+          Nested_under kubernetes
+          Add_prefix   kubernetes_
+      [FILTER]
+          Name grep
+          Match kube.*
+          Exclude kubernetes_container_name fluent-bit
+      [FILTER]
+          Name modify
+          Match kube.*
+          Rename log content
+          Rename kubernetes_pod_name k8s.pod.name
+          Rename kubernetes_namespace_name k8s.namespace.name
+          Remove kubernetes_container_image
+          Remove kubernetes_docker_id
+          Remove kubernetes_container_name
+          Remove kubernetes_pod_id
+          Remove kubernetes_host
+          Remove time
+          Remove kubernetes_container_hash
+      [FILTER]
+          Name     throttle
+          Match    kube.*
+          Rate     5000
+          Window   5
+          Print_Status true
+          Interval 30s
     outputs: |
       [OUTPUT]
           Name es
