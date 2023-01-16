@@ -12,20 +12,12 @@ fluent-bit:
   config:
     filters: |
       [FILTER]
-          Name modify
-          Match *
-          Rename message content
-          Rename log content
-      [FILTER]
           Name kubernetes
           Match kube.*
           Merge_Log On
           Merge_Log_Trim On
           Labels Off
           Annotations Off
-          K8S-Logging.Parser Off
-          K8S-Logging.Exclude Off
-
       [FILTER]
           Name nest
           Match kube.*
@@ -39,7 +31,6 @@ fluent-bit:
       [FILTER]
           Name modify
           Match kube.*
-          Rename log content
           Rename kubernetes_pod_name k8s.pod.name
           Rename kubernetes_namespace_name k8s.namespace.name
           Rename kubernetes_container_image k8s.container.image
